@@ -2,8 +2,8 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const UserModel = require("../../models/user-model.js");
 const jwt = require("jsonwebtoken");
-const { handleErrorResponse } = require("../../utils/ErrorHandler.js");
-const { CREATED, BAD_REQUEST } = require("../../utils/Status.js");
+const { handleErrorResponse } = require("../../utils/errorhandler.js");
+const { CREATED, BAD_REQUEST } = require("../../utils/status.js");
 const {
   REFRESH_TOKEN_SECRET,
   ACCESS_TOKEN_SECRET,
