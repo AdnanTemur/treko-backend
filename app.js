@@ -3,9 +3,6 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { UserRouter } = require("./routes/user-routes");
-// const { QrRoutes } = require("./routes/QrCode");
-// const { Builders } = require("./routes/builders-routes/Builders");
-// const { StripeRoutes } = require("./routes/payment-routes/index");
 
 // Middleware
 app.use(
