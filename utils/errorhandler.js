@@ -1,4 +1,4 @@
-const { INTERNAL_SERVER_ERROR } = require("./Status");
+const { INTERNAL_SERVER_ERROR } = require("./status");
 
 function handleErrorResponse(res, error) {
   const stringError = error.toString();
