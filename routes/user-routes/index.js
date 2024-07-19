@@ -6,7 +6,7 @@ const {
   RegisterUser,
   LoginUser,
   UpdateAccessToken,
-  Test,
+  GetAllEmployees,
 } = require("../../controllers/user-controller");
 const { isAuthenticated } = require("../../middlewares/authenticated");
 
@@ -16,6 +16,6 @@ UserRouter.post("/login", LoginUser);
 
 UserRouter.get("/refresh-token", UpdateAccessToken);
 
-UserRouter.post("/test", isAuthenticated, Test);
+UserRouter.get("/get-all-employees", isAuthenticated, GetAllEmployees);
 
 module.exports = { UserRouter };

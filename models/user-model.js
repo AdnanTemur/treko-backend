@@ -6,7 +6,7 @@ const {
   EMPLOYEE,
 } = require("../enums/index");
 
-const Schema = new mongoose.Schema(
+const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -38,15 +38,17 @@ const Schema = new mongoose.Schema(
 );
 
 // Sign In Access Token
-Schema.methods.signAccessToken = function () {
+UserSchema.methods.signAccessToken = function () {
   return jwt.sign({ id: this._id }, ACCESS_TOKEN_SECRET || " ", {
     expiresIn: "10m",
   });
 };
-Schema.methods.signRefreshToken = function () {
+
+UserSchema.methods.signRefreshToken = function () {
   return jwt.sign({ id: this._id }, REFRESH_TOKEN_SECRET || " ", {
     expiresIn: "45m",
   });
 };
-const UserModel = mongoose.model("UserModel", Schema);
+
+const UserModel = mongoose.model("UserModel", UserSchema);
 module.exports = UserModel;

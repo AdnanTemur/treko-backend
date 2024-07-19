@@ -7,17 +7,19 @@ const { CREATED, BAD_REQUEST } = require("../../utils/status.js");
 const {
   REFRESH_TOKEN_SECRET,
   ACCESS_TOKEN_SECRET,
+  EMPLOYEE,
 } = require("../../enums/index.js");
 const {
   accessTokenOptions,
   refreshTokenOptions,
   sendToken,
 } = require("../../utils/tokens.js");
+const { cloudinary } = require("../../utils/cloudinary.js");
 
 // Register User
 const RegisterUser = asyncHandler(async (req, res, next) => {
   try {
-    const { name, email, password, confirmPassword } = req.body;
+    const { name, email, password, confirmPassword, avatar } = req.body;
     if (!name || !password || !email || !confirmPassword) {
       return res.status(BAD_REQUEST).send({
         message: "Please enter name, password, email, and confirm password",
@@ -39,6 +41,24 @@ const RegisterUser = asyncHandler(async (req, res, next) => {
     if (isEmailExist) {
       return res.status(BAD_REQUEST).send({ message: "User already exists" });
     }
+
+    // Upload avatar to Cloudinary
+    let avatarUrl = null;
+    if (avatar) {
+      try {
+        const result = await cloudinary.uploader.upload(avatar, {
+          folder: "avatars",
+          transformation: [{ width: 500, height: 500, crop: "limit" }],
+        });
+        avatarUrl = result.secure_url;
+      } catch (uploadError) {
+        return res.status(INTERNAL_SERVER_ERROR).send({
+          message: "Failed to upload avatar",
+          error: uploadError.message,
+        });
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = { name, email, password: hashedPassword };
     const newUser = await UserModel.create(user);
@@ -57,7 +77,7 @@ const RegisterUser = asyncHandler(async (req, res, next) => {
   }
 });
 
-// Login User
+// Login Users
 const LoginUser = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -140,7 +160,24 @@ const UpdateAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-const Test = (req, res) => {
-  res.json({ message: "Access granted" });
+const GetAllEmployees = asyncHandler(async (req, res) => {
+  try {
+    const employees = await UserModel.find({ role: EMPLOYEE });
+
+    if (!employees || employees.length === 0) {
+      return res.status(404).json({ message: "No employees found" });
+    }
+
+    return res.status(200).json({ employees });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+module.exports = {
+  RegisterUser,
+  LoginUser,
+  UpdateAccessToken,
+  GetAllEmployees,
 };
-module.exports = { RegisterUser, LoginUser, UpdateAccessToken, Test };
