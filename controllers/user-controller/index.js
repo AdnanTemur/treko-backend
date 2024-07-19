@@ -19,40 +19,56 @@ const { cloudinary } = require("../../utils/cloudinary.js");
 // Register User
 const RegisterUser = asyncHandler(async (req, res, next) => {
   try {
-    const { name, email, password, confirmPassword, avatar } = req.body;
+    const { name, email, password, confirmPassword } = req.body;
+    const avatar = req.file;
+
     if (!name || !password || !email || !confirmPassword) {
-      return res.status(BAD_REQUEST).send({
+      return res.status(400).send({
         message: "Please enter name, password, email, and confirm password",
       });
     }
+
     // Validate the email format
     const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!isEmailValid) {
-      return res.status(BAD_REQUEST).send({ message: "Invalid email format" });
+      return res.status(400).send({ message: "Invalid email format" });
     }
+
     // Check if the password and confirm password match
     if (password !== confirmPassword) {
       return res
-        .status(BAD_REQUEST)
+        .status(400)
         .send({ message: "Password and confirm password do not match" });
     }
-    const isEmailExist = await UserModel.findOne({ email: email });
 
+    const isEmailExist = await UserModel.findOne({ email: email });
     if (isEmailExist) {
-      return res.status(BAD_REQUEST).send({ message: "User already exists" });
+      return res.status(400).send({ message: "User already exists" });
     }
 
     // Upload avatar to Cloudinary
     let avatarUrl = null;
     if (avatar) {
       try {
-        const result = await cloudinary.uploader.upload(avatar, {
-          folder: "avatars",
-          transformation: [{ width: 500, height: 500, crop: "limit" }],
+        await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: "avatars",
+              transformation: [{ width: 500, height: 500, crop: "limit" }],
+            },
+            (error, result) => {
+              if (error) {
+                reject(new Error(error.message));
+              } else {
+                avatarUrl = result.secure_url;
+                resolve();
+              }
+            }
+          );
+          uploadStream.end(avatar.buffer);
         });
-        avatarUrl = result.secure_url;
       } catch (uploadError) {
-        return res.status(INTERNAL_SERVER_ERROR).send({
+        return res.status(500).send({
           message: "Failed to upload avatar",
           error: uploadError.message,
         });
@@ -60,20 +76,25 @@ const RegisterUser = asyncHandler(async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = { name, email, password: hashedPassword };
+    const user = { name, email, password: hashedPassword, avatar: avatarUrl };
     const newUser = await UserModel.create(user);
-    const sendUser = { name, email };
-    try {
-      if (newUser)
-        return res.status(CREATED).send({
-          message: "User has been created Successfully",
-          user: sendUser,
-        });
-    } catch (error) {
-      return handleErrorResponse(res, error);
+    const sendUser = { name, email, avatar: avatarUrl };
+
+    if (newUser) {
+      return res.status(201).send({
+        message: "User has been created successfully",
+        user: sendUser,
+      });
+    } else {
+      return res.status(500).send({
+        message: "Failed to create user",
+      });
     }
   } catch (error) {
-    return handleErrorResponse(res, error);
+    return res.status(500).send({
+      message: "An unexpected error occurred",
+      error: error.message,
+    });
   }
 });
 
