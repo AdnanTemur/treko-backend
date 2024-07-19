@@ -154,10 +154,10 @@ const UpdateAccessToken = asyncHandler(async (req, res) => {
     }
 
     const accessToken = jwt.sign({ id: user._id }, ACCESS_TOKEN_SECRET, {
-      expiresIn: "10m",
+      expiresIn: "12h",
     });
     const refreshToken = jwt.sign({ id: user._id }, REFRESH_TOKEN_SECRET, {
-      expiresIn: "45m",
+      expiresIn: "24h",
     });
 
     req.user = user;

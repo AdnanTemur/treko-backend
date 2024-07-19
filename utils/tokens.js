@@ -1,5 +1,5 @@
-const accessTokenExpires = 600; // 10 minutes in seconds
-const refreshTokenExpires = 2700; // 45 minutes in seconds
+const accessTokenExpires = 12 * 60 * 60; // 12 hours in seconds
+const refreshTokenExpires = 24 * 60 * 60; // 24 hours in seconds
 
 let accessTokenOptions = {
   expires: new Date(Date.now() + accessTokenExpires * 1000), // Convert seconds to milliseconds

@@ -40,13 +40,13 @@ const UserSchema = new mongoose.Schema(
 // Sign In Access Token
 UserSchema.methods.signAccessToken = function () {
   return jwt.sign({ id: this._id }, ACCESS_TOKEN_SECRET || " ", {
-    expiresIn: "10m",
+    expiresIn: "12h",
   });
 };
 
 UserSchema.methods.signRefreshToken = function () {
   return jwt.sign({ id: this._id }, REFRESH_TOKEN_SECRET || " ", {
-    expiresIn: "45m",
+    expiresIn: "24h",
   });
 };
 
