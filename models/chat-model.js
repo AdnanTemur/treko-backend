@@ -14,25 +14,14 @@ const MessageSchema = new mongoose.Schema({
 const ChatSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "UserModel",
     required: true,
   },
   coworkerChats: [
     {
       coworkerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-      messageSent: [MessageSchema],
-      messageReceived: [MessageSchema],
-    },
-  ],
-  bossChats: [
-    {
-      bossId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "UserModel",
         required: true,
       },
       messageSent: [MessageSchema],

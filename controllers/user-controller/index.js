@@ -15,6 +15,7 @@ const {
   sendToken,
 } = require("../../utils/tokens.js");
 const { cloudinary } = require("../../utils/cloudinary.js");
+const { default: mongoose } = require("mongoose");
 
 // Register User
 const RegisterUser = asyncHandler(async (req, res, next) => {
@@ -195,10 +196,33 @@ const GetAllEmployees = asyncHandler(async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
+// Get User by ID
+const GetUserById = asyncHandler(async (req, res) => {
+  try {
+    console.log("Request Params:", req.params); // Log the parameters
+    const { userId } = req.params; // Extract userId directly
 
+    // Validate ID format (optional, but generally good practice)
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    const user = await UserModel.findById(userId).select("-password"); // Exclude password from response
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json(user); // Return user object directly
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 module.exports = {
   RegisterUser,
   LoginUser,
   UpdateAccessToken,
   GetAllEmployees,
+  GetUserById,
 };

@@ -7,6 +7,7 @@ const { UserRouter } = require("./routes/user-routes");
 const {
   initializeChatSocket,
 } = require("./controllers/chat-controller/chatSocketHandler");
+const { ChatRouter } = require("./routes/chat-routes");
 
 const app = express();
 const server = http.createServer(app);
@@ -35,7 +36,7 @@ app.use(
 app.use(express.urlencoded({ extended: false }));
 
 // Routes
-app.use("/api/v1", UserRouter);
+app.use("/api/v1", UserRouter, ChatRouter);
 
 // Initialize chat sockets
 initializeChatSocket(io);

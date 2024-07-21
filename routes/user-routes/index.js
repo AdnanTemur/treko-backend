@@ -7,6 +7,7 @@ const {
   LoginUser,
   UpdateAccessToken,
   GetAllEmployees,
+  GetUserById,
 } = require("../../controllers/user-controller");
 const { isAuthenticated } = require("../../middlewares/authenticated");
 
@@ -23,5 +24,7 @@ UserRouter.post("/login", LoginUser);
 UserRouter.get("/refresh-token", UpdateAccessToken);
 
 UserRouter.get("/get-all-employees", isAuthenticated, GetAllEmployees);
+
+UserRouter.get("/get-user/:userId", isAuthenticated, GetUserById);
 
 module.exports = { UserRouter };
