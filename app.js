@@ -1,8 +1,22 @@
 const express = require("express");
-const app = express();
+const http = require("http");
+const socketio = require("socket.io");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { UserRouter } = require("./routes/user-routes");
+const {
+  initializeChatSocket,
+} = require("./controllers/chat-controller/chatSocketHandler");
+
+const app = express();
+const server = http.createServer(app);
+const io = socketio(server, {
+  cors: {
+    origin: "*", // Adjust according to your security requirements
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  },
+});
 
 // Middleware
 app.use(
@@ -15,11 +29,7 @@ app.set("view engine", "ejs");
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://staffer-frontend.vercel.app",
-      "*",
-    ],
+    origin: "*", // This should be adjusted for production
   })
 );
 app.use(express.urlencoded({ extended: false }));
@@ -27,7 +37,8 @@ app.use(express.urlencoded({ extended: false }));
 // Routes
 app.use("/api/v1", UserRouter);
 
-// Route for creating subscription
+// Initialize chat sockets
+initializeChatSocket(io);
 
 // Default route
 app.get("/", (req, res) => {
@@ -41,4 +52,4 @@ app.all("*", (req, res) => {
     .send({ message: req.originalUrl + " route not found" });
 });
 
-module.exports = { app };
+module.exports = { app, server };
