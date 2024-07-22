@@ -4,7 +4,7 @@ const asyncHandler = require("express-async-handler");
 
 function initializeChatSocket(io) {
   io.on("connection", (socket) => {
-    console.log("A user connected");
+    console.log("A user connected:", socket.id);
 
     socket.on(
       SocketEvents.SEND_MESSAGE,
@@ -35,7 +35,7 @@ function initializeChatSocket(io) {
           if (!coworkerChat) {
             coworkerChat = {
               coworkerId: receiverId,
-              messageSent: [{ text: "Hi there", timestamp: new Date() }],
+              messageSent: [],
               messageReceived: [],
             };
             chat.coworkerChats.push(coworkerChat);
@@ -69,7 +69,7 @@ function initializeChatSocket(io) {
             coworkerReceiverChat = {
               coworkerId: senderId,
               messageSent: [],
-              messageReceived: [{ text: "Hi there", timestamp: new Date() }],
+              messageReceived: [],
             };
             receiverChat.coworkerChats.push(coworkerReceiverChat);
           }
@@ -82,13 +82,14 @@ function initializeChatSocket(io) {
 
           await receiverChat.save();
 
+          console.log("Emitting message to sender and receiver");
           // Emit the message to both sender and receiver
-          io.to(senderId).emit(SocketEvents.RECEIVE_MESSAGE, {
+          io.to(socket.id).emit(SocketEvents.RECEIVE_MESSAGE, {
             senderId,
             receiverId,
             message: { text: messageText, timestamp: new Date() },
           });
-          io.to(receiverId).emit(SocketEvents.RECEIVE_MESSAGE, {
+          socket.broadcast.emit(SocketEvents.RECEIVE_MESSAGE, {
             senderId,
             receiverId,
             message: { text: messageText, timestamp: new Date() },
@@ -101,10 +102,11 @@ function initializeChatSocket(io) {
     );
 
     socket.on("disconnect", () => {
-      console.log("User disconnected");
+      console.log("User disconnected:", socket.id);
     });
   });
 }
+
 const GetCoworkerChatsWithMessages = asyncHandler(async (req, res) => {
   try {
     const { userId, coworkerId } = req.query;
@@ -148,12 +150,10 @@ const GetCoworkerChatsWithMessages = asyncHandler(async (req, res) => {
     });
 
     if (!coworkerChat) {
-      return res
-        .status(200)
-        .json({
-          message: "No chat found with the specified coworker",
-          coworkerChats: [],
-        });
+      return res.status(200).json({
+        message: "No chat found with the specified coworker",
+        coworkerChats: [],
+      });
     }
 
     console.log("Filtered CoworkerChat:", coworkerChat);
