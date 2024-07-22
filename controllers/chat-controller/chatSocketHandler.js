@@ -6,6 +6,12 @@ function initializeChatSocket(io) {
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
+    // Get the userId from the query parameters or from the authentication
+    const { userId } = socket.handshake.query;
+    if (userId) {
+      socket.join(userId);
+    }
+
     socket.on(
       SocketEvents.SEND_MESSAGE,
       async ({ senderId, receiverId, messageText }) => {
@@ -83,13 +89,16 @@ function initializeChatSocket(io) {
           await receiverChat.save();
 
           console.log("Emitting message to sender and receiver");
-          // Emit the message to both sender and receiver
-          io.to(socket.id).emit(SocketEvents.RECEIVE_MESSAGE, {
+
+          // Emit the message to the sender's room
+          io.to(senderId).emit(SocketEvents.RECEIVE_MESSAGE, {
             senderId,
             receiverId,
             message: { text: messageText, timestamp: new Date() },
           });
-          socket.broadcast.emit(SocketEvents.RECEIVE_MESSAGE, {
+
+          // Emit the message to the receiver's room
+          io.to(receiverId).emit(SocketEvents.RECEIVE_MESSAGE, {
             senderId,
             receiverId,
             message: { text: messageText, timestamp: new Date() },
