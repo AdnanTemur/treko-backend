@@ -35,13 +35,13 @@ function initializeChatSocket(io) {
           if (!coworkerChat) {
             coworkerChat = {
               coworkerId: receiverId,
-              messageSent: [],
+              messageSent: [{ text: "Hi there", timestamp: new Date() }],
               messageReceived: [],
             };
             chat.coworkerChats.push(coworkerChat);
           }
 
-          // Add the message to the sent messages
+          // Add the actual message to the sent messages
           coworkerChat.messageSent.push({
             text: messageText,
             timestamp: new Date(),
@@ -69,12 +69,12 @@ function initializeChatSocket(io) {
             coworkerReceiverChat = {
               coworkerId: senderId,
               messageSent: [],
-              messageReceived: [],
+              messageReceived: [{ text: "Hi there", timestamp: new Date() }],
             };
             receiverChat.coworkerChats.push(coworkerReceiverChat);
           }
 
-          // Add the message to the received messages
+          // Add the actual message to the received messages
           coworkerReceiverChat.messageReceived.push({
             text: messageText,
             timestamp: new Date(),
@@ -105,27 +105,61 @@ function initializeChatSocket(io) {
     });
   });
 }
-
 const GetCoworkerChatsWithMessages = asyncHandler(async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const { userId, coworkerId } = req.query;
 
-    // Validate userId
-    if (!userId) {
-      return res.status(400).json({ message: "User ID is required" });
+    // Validate userId and coworkerId
+    if (!userId || !coworkerId) {
+      return res
+        .status(400)
+        .json({ message: "User ID and Coworker ID are required" });
     }
+
+    console.log(
+      "Fetching chat for userId:",
+      userId,
+      "and coworkerId:",
+      coworkerId
+    );
 
     // Find the chat document for the specified userId
     const chat = await ChatModel.findOne({ userId })
       .populate("coworkerChats.coworkerId", "_id") // Populate only _id of coworkerId
       .lean(); // Use lean to get plain JavaScript objects
 
+    console.log("Chat document found:", JSON.stringify(chat, null, 2));
+
     if (!chat) {
-      return res.status(404).json({ message: "No chat found for this user" });
+      return res
+        .status(200)
+        .json({ message: "No chat found for this user", coworkerChats: [] });
     }
 
-    // Return the coworkerChats data exactly as needed
-    res.status(200).json({ coworkerChats: chat.coworkerChats });
+    // Find the specific coworkerChat entry
+    const coworkerChat = chat.coworkerChats.find((cwChat) => {
+      console.log(
+        "Comparing coworkerId:",
+        cwChat.coworkerId._id.toString(),
+        "with",
+        coworkerId
+      );
+      return cwChat.coworkerId._id.toString() === coworkerId;
+    });
+
+    if (!coworkerChat) {
+      return res
+        .status(200)
+        .json({
+          message: "No chat found with the specified coworker",
+          coworkerChats: [],
+        });
+    }
+
+    console.log("Filtered CoworkerChat:", coworkerChat);
+
+    // Return the specific coworkerChat data
+    res.status(200).json({ coworkerChats: [coworkerChat] });
   } catch (error) {
     console.error("Error retrieving coworker chats with messages:", error);
     res.status(500).json({ message: "Internal server error" });

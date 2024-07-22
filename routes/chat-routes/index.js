@@ -9,7 +9,7 @@ const {
 
 // get my message with coo-workers
 ChatRouter.get(
-  "/coworker-chats/:userId/messages",
+  "/coworker-chats/messages",
   isAuthenticated,
   GetCoworkerChatsWithMessages
 );
