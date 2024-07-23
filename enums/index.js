@@ -1,7 +1,16 @@
 const ACCESS_TOKEN_SECRET = "accesstoken";
 const REFRESH_TOKEN_SECRET = "refreshtoken";
+const ACCESSTOKEEXPIRETIME = "24h";
+const REFRESHTOKEEXPIRETIME = "24h";
 
 const EMPLOYEE = "employee";
 const BOSS = "boss";
 
-module.exports = { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, EMPLOYEE, BOSS };
+module.exports = {
+  ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET,
+  EMPLOYEE,
+  BOSS,
+  ACCESSTOKEEXPIRETIME,
+  REFRESHTOKEEXPIRETIME,
+};

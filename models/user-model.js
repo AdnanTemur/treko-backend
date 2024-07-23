@@ -4,6 +4,8 @@ const {
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
   EMPLOYEE,
+  ACCESSTOKEEXPIRETIME,
+  REFRESHTOKEEXPIRETIME,
 } = require("../enums/index");
 
 const UserSchema = new mongoose.Schema(
@@ -40,13 +42,13 @@ const UserSchema = new mongoose.Schema(
 // Sign In Access Token
 UserSchema.methods.signAccessToken = function () {
   return jwt.sign({ id: this._id }, ACCESS_TOKEN_SECRET || " ", {
-    expiresIn: "12h",
+    expiresIn: ACCESSTOKEEXPIRETIME,
   });
 };
 
 UserSchema.methods.signRefreshToken = function () {
   return jwt.sign({ id: this._id }, REFRESH_TOKEN_SECRET || " ", {
-    expiresIn: "24h",
+    expiresIn: REFRESHTOKEEXPIRETIME,
   });
 };
 

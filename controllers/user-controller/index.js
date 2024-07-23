@@ -8,6 +8,8 @@ const {
   REFRESH_TOKEN_SECRET,
   ACCESS_TOKEN_SECRET,
   EMPLOYEE,
+  ACCESSTOKEEXPIRETIME,
+  REFRESHTOKEEXPIRETIME,
 } = require("../../enums/index.js");
 const {
   accessTokenOptions,
@@ -155,10 +157,10 @@ const UpdateAccessToken = asyncHandler(async (req, res) => {
     }
 
     const accessToken = jwt.sign({ id: user._id }, ACCESS_TOKEN_SECRET, {
-      expiresIn: "12h",
+      expiresIn: ACCESSTOKEEXPIRETIME,
     });
     const refreshToken = jwt.sign({ id: user._id }, REFRESH_TOKEN_SECRET, {
-      expiresIn: "24h",
+      expiresIn: REFRESHTOKEEXPIRETIME,
     });
 
     req.user = user;

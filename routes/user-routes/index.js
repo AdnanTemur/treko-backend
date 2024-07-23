@@ -12,6 +12,7 @@ const {
 const { isAuthenticated } = require("../../middlewares/authenticated");
 
 const multer = require("multer");
+const { Testing } = require("../../controllers/test");
 
 // Configure Multer for file uploads
 const storage = multer.memoryStorage();
@@ -26,5 +27,7 @@ UserRouter.get("/refresh-token", UpdateAccessToken);
 UserRouter.get("/get-all-employees", isAuthenticated, GetAllEmployees);
 
 UserRouter.get("/get-user/:userId", isAuthenticated, GetUserById);
+
+UserRouter.get("/test", isAuthenticated, Testing);
 
 module.exports = { UserRouter };

@@ -1,16 +1,16 @@
-const accessTokenExpires = 12 * 60 * 60; // 12 hours in seconds
-const refreshTokenExpires = 24 * 60 * 60; // 24 hours in seconds
+const accessTokenExpires = 24 * 60 * 60;
+const refreshTokenExpires = 24 * 60 * 60;
 
 let accessTokenOptions = {
-  expires: new Date(Date.now() + accessTokenExpires * 1000), // Convert seconds to milliseconds
-  maxAge: accessTokenExpires * 1000, // Convert seconds to milliseconds
+  expires: new Date(Date.now() + accessTokenExpires * 1000),
+  maxAge: accessTokenExpires * 1000,
   httpOnly: true,
   sameSite: true,
 };
 
 let refreshTokenOptions = {
-  expires: new Date(Date.now() + refreshTokenExpires * 1000), // Convert seconds to milliseconds
-  maxAge: refreshTokenExpires * 1000, // Convert seconds to milliseconds
+  expires: new Date(Date.now() + refreshTokenExpires * 1000),
+  maxAge: refreshTokenExpires * 1000,
   httpOnly: true,
   sameSite: true,
 };

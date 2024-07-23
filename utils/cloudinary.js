@@ -7,8 +7,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-console.log("Cloud:", {
-  cloud_name: cloudinary.config().cloud_name,
-});
+console.log(" ☁️  Cloud Connected ", cloudinary.config().cloud_name, "☁️");
 
 module.exports = { cloudinary };

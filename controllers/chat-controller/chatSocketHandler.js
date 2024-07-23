@@ -4,7 +4,7 @@ const asyncHandler = require("express-async-handler");
 
 function initializeChatSocket(io) {
   io.on("connection", (socket) => {
-    console.log("A user connected:", socket.id);
+    console.log(" 💬 A user connected 💬", socket.id);
 
     // Get the userId from the query parameters or from the authentication
     const { userId } = socket.handshake.query;
@@ -15,12 +15,6 @@ function initializeChatSocket(io) {
     socket.on(
       SocketEvents.SEND_MESSAGE,
       async ({ senderId, receiverId, messageText }) => {
-        console.log("Message received: ", {
-          senderId,
-          receiverId,
-          messageText,
-        });
-
         try {
           // Find chat document for the sender
           let chat = await ChatModel.findOne({ userId: senderId });
@@ -87,9 +81,6 @@ function initializeChatSocket(io) {
           });
 
           await receiverChat.save();
-
-          console.log("Emitting message to sender and receiver");
-
           // Emit the message to the sender's room
           io.to(senderId).emit(SocketEvents.RECEIVE_MESSAGE, {
             senderId,
@@ -111,7 +102,7 @@ function initializeChatSocket(io) {
     );
 
     socket.on("disconnect", () => {
-      console.log("User disconnected:", socket.id);
+      console.log("💬 User disconnected 💬", socket.id);
     });
   });
 }
@@ -127,19 +118,10 @@ const GetCoworkerChatsWithMessages = asyncHandler(async (req, res) => {
         .json({ message: "User ID and Coworker ID are required" });
     }
 
-    console.log(
-      "Fetching chat for userId:",
-      userId,
-      "and coworkerId:",
-      coworkerId
-    );
-
     // Find the chat document for the specified userId
     const chat = await ChatModel.findOne({ userId })
       .populate("coworkerChats.coworkerId", "_id") // Populate only _id of coworkerId
       .lean(); // Use lean to get plain JavaScript objects
-
-    console.log("Chat document found:", JSON.stringify(chat, null, 2));
 
     if (!chat) {
       return res
@@ -149,12 +131,6 @@ const GetCoworkerChatsWithMessages = asyncHandler(async (req, res) => {
 
     // Find the specific coworkerChat entry
     const coworkerChat = chat.coworkerChats.find((cwChat) => {
-      console.log(
-        "Comparing coworkerId:",
-        cwChat.coworkerId._id.toString(),
-        "with",
-        coworkerId
-      );
       return cwChat.coworkerId._id.toString() === coworkerId;
     });
 
@@ -164,8 +140,6 @@ const GetCoworkerChatsWithMessages = asyncHandler(async (req, res) => {
         coworkerChats: [],
       });
     }
-
-    console.log("Filtered CoworkerChat:", coworkerChat);
 
     // Return the specific coworkerChat data
     res.status(200).json({ coworkerChats: [coworkerChat] });
