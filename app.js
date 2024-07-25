@@ -8,6 +8,10 @@ const {
   initializeChatSocket,
 } = require("./controllers/chat-controller/chatSocketHandler");
 const { ChatRouter } = require("./routes/chat-routes");
+const {
+  initializeLocations,
+} = require("./controllers/location-controller/locationController");
+const { LocationRouter } = require("./routes/location-routes");
 
 const app = express();
 const server = http.createServer(app);
@@ -36,10 +40,11 @@ app.use(
 app.use(express.urlencoded({ extended: false }));
 
 // Routes
-app.use("/api/v1", UserRouter, ChatRouter);
+app.use("/api/v1", UserRouter, ChatRouter, LocationRouter);
 
-// Initialize chat sockets
+// Initialize chat sockets and locations
 initializeChatSocket(io);
+initializeLocations(io);
 
 // Default route
 app.get("/", (req, res) => {
