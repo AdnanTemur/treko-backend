@@ -186,7 +186,7 @@ const UpdateAccessToken = asyncHandler(async (req, res) => {
 
 const GetAllEmployees = asyncHandler(async (req, res) => {
   try {
-    const employees = await UserModel.find({ role: EMPLOYEE });
+    const employees = await UserModel.find();
 
     if (!employees || employees.length === 0) {
       return res.status(404).json({ message: "No employees found" });
