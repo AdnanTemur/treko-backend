@@ -2,38 +2,6 @@ const asyncHandler = require("express-async-handler");
 const LocationModel = require("../../models/location-model");
 const UserModel = require("../../models/user-model");
 
-function initializeLocations(io) {
-  io.on("connection", (socket) => {
-    console.log(" 📍 A user location connected 📍", socket.id);
-
-    socket.on("updateLocation", async ({ userId, latitude, longitude }) => {
-      try {
-        const existingLocation = await LocationModel.findOne({ userId });
-        if (existingLocation) {
-          existingLocation.latitude = latitude;
-          existingLocation.longitude = longitude;
-          existingLocation.timestamp = new Date();
-          await existingLocation.save();
-        } else {
-          await LocationModel.create({
-            userId,
-            latitude,
-            longitude,
-            timestamp: new Date(),
-          });
-        }
-        io.emit("locationUpdate", { userId, latitude, longitude });
-      } catch (error) {
-        console.error("Error handling location update: ", error);
-      }
-    });
-
-    socket.on("disconnect", () => {
-      console.log("📍 User disconnected 📍", socket.id);
-    });
-  });
-}
-
 const addLocation = asyncHandler(async (req, res) => {
   try {
     const { userId, latitude, longitude, latitudeDelta, longitudeDelta } =
@@ -133,4 +101,4 @@ const GetAllLocations = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { initializeLocations, GetAllLocations, addLocation };
+module.exports = { GetAllLocations, addLocation };

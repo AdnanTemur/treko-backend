@@ -148,4 +148,55 @@ const GetCoworkerChatsWithMessages = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-module.exports = { initializeChatSocket, GetCoworkerChatsWithMessages };
+const BossChatsTracer = asyncHandler(async (req, res) => {
+  try {
+    const { employeeId1, employeeId2 } = req.query;
+
+    if (!employeeId1 || !employeeId2) {
+      return res
+        .status(400)
+        .json({ message: "Both employee IDs are required" });
+    }
+
+    const chats = await ChatModel.find({
+      $or: [
+        { userId: employeeId1, "coworkerChats.coworkerId": employeeId2 },
+        { userId: employeeId2, "coworkerChats.coworkerId": employeeId1 },
+      ],
+    });
+
+    if (!chats || chats.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No chats found between these employees" });
+    }
+
+    const tracedChats = [];
+
+    chats.forEach((chat) => {
+      chat.coworkerChats.forEach((coworkerChat) => {
+        if (
+          coworkerChat.coworkerId.toString() === employeeId2 ||
+          coworkerChat.coworkerId.toString() === employeeId1
+        ) {
+          tracedChats.push({
+            userId: chat.userId,
+            coworkerId: coworkerChat.coworkerId,
+            messageSent: coworkerChat.messageSent,
+            messageReceived: coworkerChat.messageReceived,
+          });
+        }
+      });
+    });
+
+    res.status(200).json(tracedChats);
+  } catch (error) {
+    console.error("Error retrieving chats:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+module.exports = {
+  initializeChatSocket,
+  GetCoworkerChatsWithMessages,
+  BossChatsTracer,
+};
