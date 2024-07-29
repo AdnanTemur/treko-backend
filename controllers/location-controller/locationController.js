@@ -57,7 +57,7 @@ const addLocation = asyncHandler(async (req, res) => {
       data: location,
     });
   } catch (error) {
-    console.error("Error adding location", error);
+    console.log("Error adding location", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -96,7 +96,7 @@ const GetAllLocations = asyncHandler(async (req, res) => {
       locations: formattedLocations,
     });
   } catch (error) {
-    console.error("Error fetching locations", error);
+    console.log("Error fetching locations", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });

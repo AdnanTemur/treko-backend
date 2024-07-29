@@ -5,8 +5,10 @@ const {
   RegisterUser,
   LoginUser,
   UpdateAccessToken,
-  GetAllEmployees,
+  GetAllUsers,
   GetUserById,
+  GetAllEmployees,
+  UpdateUserProfile,
 } = require("../../controllers/user-controller");
 const { isAuthenticated } = require("../../middlewares/authenticated");
 const multer = require("multer");
@@ -21,8 +23,17 @@ UserRouter.post("/login", LoginUser);
 
 UserRouter.get("/refresh-token", UpdateAccessToken);
 
+UserRouter.get("/get-all-users", isAuthenticated, GetAllUsers);
+
 UserRouter.get("/get-all-employees", isAuthenticated, GetAllEmployees);
 
-UserRouter.get("/get-user/:userId", isAuthenticated, GetUserById);
+UserRouter.get("/get-user/:employeeId", isAuthenticated, GetUserById);
+
+UserRouter.post(
+  "/update-user/:employeeId",
+  upload.single("avatar"),
+  isAuthenticated,
+  UpdateUserProfile
+);
 
 module.exports = { UserRouter };

@@ -95,7 +95,7 @@ function initializeChatSocket(io) {
             message: { text: messageText, timestamp: new Date() },
           });
         } catch (error) {
-          console.error("Error saving message: ", error);
+          console.log("Error saving message: ", error);
           socket.emit(SocketEvents.ERROR, { message: "Error saving message" });
         }
       }
@@ -144,7 +144,7 @@ const GetCoworkerChatsWithMessages = asyncHandler(async (req, res) => {
     // Return the specific coworkerChat data
     res.status(200).json({ coworkerChats: [coworkerChat] });
   } catch (error) {
-    console.error("Error retrieving coworker chats with messages:", error);
+    console.log("Error retrieving coworker chats with messages:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -191,7 +191,7 @@ const BossChatsTracer = asyncHandler(async (req, res) => {
 
     res.status(200).json(tracedChats);
   } catch (error) {
-    console.error("Error retrieving chats:", error);
+    console.log("Error retrieving chats:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });

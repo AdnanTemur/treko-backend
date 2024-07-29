@@ -18,11 +18,13 @@ const {
 } = require("../../utils/tokens.js");
 const { cloudinary } = require("../../utils/cloudinary.js");
 const { default: mongoose } = require("mongoose");
+const { sendMail } = require("../../utils/mailer.js");
 
 // Register User
 const RegisterUser = asyncHandler(async (req, res, next) => {
   try {
     const { name, email, password, confirmPassword } = req.body;
+    // Send email with user details
     const avatar = req.file;
 
     if (!name || !password || !email || !confirmPassword) {
@@ -82,6 +84,9 @@ const RegisterUser = asyncHandler(async (req, res, next) => {
     const user = { name, email, password: hashedPassword, avatar: avatarUrl };
     const newUser = await UserModel.create(user);
     const sendUser = { name, email, avatar: avatarUrl };
+    await sendMail(email, name, email, password).catch((err) => {
+      console.log("Error sending nodemailer error");
+    });
 
     if (newUser) {
       return res.status(201).send({
@@ -184,7 +189,7 @@ const UpdateAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-const GetAllEmployees = asyncHandler(async (req, res) => {
+const GetAllUsers = asyncHandler(async (req, res) => {
   try {
     const employees = await UserModel.find();
 
@@ -194,37 +199,114 @@ const GetAllEmployees = asyncHandler(async (req, res) => {
 
     return res.status(200).json({ employees });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
 // Get User by ID
 const GetUserById = asyncHandler(async (req, res) => {
   try {
-    console.log("Request Params:", req.params); // Log the parameters
-    const { userId } = req.params; // Extract userId directly
+    const { employeeId } = req.params;
 
-    // Validate ID format (optional, but generally good practice)
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
+    if (!mongoose.Types.ObjectId.isValid(employeeId)) {
       return res.status(400).json({ message: "Invalid user ID format" });
     }
 
-    const user = await UserModel.findById(userId).select("-password"); // Exclude password from response
-
+    const user = await UserModel.findById(employeeId).select("-password");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    return res.status(200).json(user); // Return user object directly
+    return res.status(200).json(user);
   } catch (error) {
-    console.error("Error fetching user:", error);
+    console.log("Error fetching user:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
+const GetAllEmployees = asyncHandler(async (req, res) => {
+  try {
+    const employees = await UserModel.find({ role: EMPLOYEE });
+
+    if (!employees || employees.length === 0) {
+      return res.status(404).json({ message: "No employees found" });
+    }
+
+    return res.status(200).json({ employees });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+const UpdateUserProfile = asyncHandler(async (req, res) => {
+  try {
+    const { name } = req.body;
+    const avatar = req.file;
+    const { employeeId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(employeeId)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    const user = await UserModel.findById(employeeId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (name) {
+      user.name = name;
+    }
+
+    // Upload avatar to Cloudinary
+    let avatarUrl = null;
+    if (avatar) {
+      try {
+        await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: "avatars",
+              transformation: [{ width: 500, height: 500, crop: "limit" }],
+            },
+            (error, result) => {
+              if (error) {
+                reject(new Error(error.message));
+              } else {
+                avatarUrl = result.secure_url;
+                resolve();
+              }
+            }
+          );
+          uploadStream.end(avatar.buffer);
+        });
+      } catch (uploadError) {
+        return res.status(500).send({
+          message: "Failed to upload avatar",
+          error: uploadError.message,
+        });
+      }
+    }
+    if (avatarUrl) {
+      user.avatar = avatarUrl;
+    }
+    await user.save();
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("An unexpected error occurred:", error.message);
+    return res.status(500).json({
+      message: "An unexpected error occurred",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = {
   RegisterUser,
   LoginUser,
   UpdateAccessToken,
-  GetAllEmployees,
+  GetAllUsers,
   GetUserById,
+  GetAllEmployees,
+  UpdateUserProfile,
 };

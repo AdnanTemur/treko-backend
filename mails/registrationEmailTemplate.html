@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #e5e5e5;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background-color: #09648c;
+        color: #ffffff;
+        padding: 20px;
+        text-align: center;
+      }
+      .content {
+        padding: 20px;
+        color: #333333;
+      }
+      .footer {
+        background-color: #f7f7f7;
+        padding: 10px;
+        text-align: center;
+        font-size: 12px;
+        color: #888888;
+      }
+      .details {
+        margin: 20px 0;
+      }
+      .details p {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Welcome to Treko!</h1>
+      </div>
+      <div class="content">
+        <p>Hello {{name}},</p>
+        <p>Thank you for registering. Here are your registration details:</p>
+        <p>You can login through below details</p>
+
+        <div class="details">
+          <p><strong>Email:</strong> {{email}}</p>
+          <p><strong>Password:</strong> {{password}}</p>
+        </div>
+        <p>Best regards,</p>
+        <p>The Treko Team</p>
+      </div>
+      <div class="footer">
+        <p>&copy; 2024 Treko. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>
