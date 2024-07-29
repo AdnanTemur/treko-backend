@@ -293,7 +293,7 @@ const UpdateUserProfile = asyncHandler(async (req, res) => {
       user,
     });
   } catch (error) {
-    console.error("An unexpected error occurred:", error.message);
+    console.log("An unexpected error occurred:", error.message);
     return res.status(500).json({
       message: "An unexpected error occurred",
       error: error.message,
