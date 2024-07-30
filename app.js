@@ -37,7 +37,10 @@ app.use(
 app.use(express.urlencoded({ extended: false }));
 
 // Routes
-app.use("/api/v1", UserRouter, ChatRouter, LocationRouter);
+app.use("/api/v1/", UserRouter);
+app.use("/api/v1/", ChatRouter);
+app.use("/api/v1/", LocationRouter);
+
 
 // Initialize chat sockets and locations
 initializeChatSocket(io);
