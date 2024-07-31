@@ -228,7 +228,7 @@ const GetAllEmployees = asyncHandler(async (req, res) => {
     const employees = await UserModel.find({ role: EMPLOYEE });
 
     if (!employees || employees.length === 0) {
-      return res.status(404).json({ message: "No employees found" });
+      return res.status(200).json({ message: "No employees found" });
     }
 
     return res.status(200).json({ employees });
@@ -244,12 +244,12 @@ const UpdateUserProfile = asyncHandler(async (req, res) => {
     const { employeeId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(employeeId)) {
-      return res.status(400).json({ message: "Invalid user ID format" });
+      return res.status(200).json({ message: "Invalid user ID format" });
     }
 
     const user = await UserModel.findById(employeeId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(200).json({ message: "User not found" });
     }
 
     if (name) {

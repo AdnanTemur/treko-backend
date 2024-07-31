@@ -154,7 +154,7 @@ const BossChatsTracer = asyncHandler(async (req, res) => {
 
     if (!employeeId1 || !employeeId2) {
       return res
-        .status(400)
+        .status(203)
         .json({ message: "Both employee IDs are required" });
     }
 
@@ -167,7 +167,7 @@ const BossChatsTracer = asyncHandler(async (req, res) => {
 
     if (!chats || chats.length === 0) {
       return res
-        .status(404)
+        .status(203)
         .json({ message: "No chats found between these employees" });
     }
 
