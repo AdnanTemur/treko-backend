@@ -27,10 +27,6 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    location: {
-      type: String,
-      default: null,
-    },
     role: {
       type: String,
       default: EMPLOYEE,
