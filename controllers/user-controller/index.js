@@ -300,7 +300,35 @@ const UpdateUserProfile = asyncHandler(async (req, res) => {
     });
   }
 });
+const DeleteUser = asyncHandler(async (req, res) => {
+  try {
+    const { employeeId } = req.params;
 
+    // Validate the user ID format
+    if (!mongoose.Types.ObjectId.isValid(employeeId)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    // Find and delete the user by ID
+    const user = await UserModel.findByIdAndDelete(employeeId);
+
+    // If user is not found
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // If user is deleted successfully
+    return res.status(200).json({
+      message: "User has been deleted successfully",
+    });
+  } catch (error) {
+    console.log("Error deleting user:", error);
+    return res.status(500).json({
+      message: "An unexpected error occurred",
+      error: error.message,
+    });
+  }
+});
 module.exports = {
   RegisterUser,
   LoginUser,
@@ -309,4 +337,5 @@ module.exports = {
   GetUserById,
   GetAllEmployees,
   UpdateUserProfile,
+  DeleteUser,
 };
