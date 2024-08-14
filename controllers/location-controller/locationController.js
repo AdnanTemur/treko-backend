@@ -6,8 +6,6 @@ const addLocation = asyncHandler(async (req, res) => {
   try {
     const { userId, latitude, longitude, latitudeDelta, longitudeDelta } =
       req.body;
-
-    // Validate request body
     if (
       !userId ||
       latitude === undefined ||
@@ -18,19 +16,31 @@ const addLocation = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Find existing location entry for the user
-    let location = await LocationModel.findOne({ userId });
+    const location = await LocationModel.findOneAndUpdate(
+      { userId },
+      {
+        latitude,
+        longitude,
+        latitudeDelta,
+        longitudeDelta,
+        timestamp: Date.now(),
+      },
+      { new: true, upsert: true }
+    );
 
+    const user = await UserModel.findById(userId).select("email name avatar");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
     if (location) {
-      // Update existing location
       location.latitude = latitude;
       location.longitude = longitude;
       location.latitudeDelta = latitudeDelta;
       location.longitudeDelta = longitudeDelta;
-      location.timestamp = Date.now(); // Update the timestamp to the current time
+      location.timestamp = Date.now();
       await location.save();
     } else {
-      // Create new location entry
       location = new LocationModel({
         userId,
         latitude,
@@ -41,15 +51,6 @@ const addLocation = asyncHandler(async (req, res) => {
       await location.save();
     }
 
-    // Fetch user details
-    const user = await UserModel.findById(userId).select("email name avatar");
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Format the response
-
     res.status(200).json({
       message: location
         ? "Location updated successfully"
@@ -57,7 +58,7 @@ const addLocation = asyncHandler(async (req, res) => {
       data: location,
     });
   } catch (error) {
-    console.log("Error adding location", error);
+    console.error("Error adding location", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -73,30 +74,42 @@ const GetAllLocations = asyncHandler(async (req, res) => {
       .sort({ timestamp: -1 }); // Sort by the most recent location
 
     // Format the response
-    const formattedLocations = locations.map((location) => ({
-      _id: location._id,
-      timestamp: location.timestamp,
-      __v: location.__v,
-      userDetail: {
-        name: location.userId.name,
-        avatar: location.userId.avatar,
-        email: location.userId.email,
-        _id: location.userId._id,
-      },
-      coordinates: {
-        latitude: location.latitude,
-        longitude: location.longitude,
-        latitudeDelta: location.latitudeDelta,
-        longitudeDelta: location.longitudeDelta,
-      },
-    }));
+    const formattedLocations = locations.map((location) => {
+      // Check if userId exists and is populated
+      const user = location.userId
+        ? {
+            name: location.userId.name,
+            avatar: location.userId.avatar,
+            email: location.userId.email,
+            _id: location.userId._id,
+          }
+        : {
+            name: "Unknown User",
+            avatar: null,
+            email: "unknown@example.com",
+            _id: null,
+          };
+
+      return {
+        _id: location._id,
+        timestamp: location.timestamp,
+        __v: location.__v,
+        userDetail: user,
+        coordinates: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: location.latitudeDelta,
+          longitudeDelta: location.longitudeDelta,
+        },
+      };
+    });
 
     res.status(200).json({
       message: "Locations fetched successfully",
       locations: formattedLocations,
     });
   } catch (error) {
-    console.log("Error fetching locations", error);
+    console.error("Error fetching locations:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
