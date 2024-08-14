@@ -19,6 +19,7 @@ const {
 const { cloudinary } = require("../../utils/cloudinary.js");
 const { default: mongoose } = require("mongoose");
 const { sendMail } = require("../../utils/mailer.js");
+const LocationModel = require("../../models/location-model.js");
 
 // Register User
 const RegisterUser = asyncHandler(async (req, res, next) => {
@@ -300,7 +301,43 @@ const UpdateUserProfile = asyncHandler(async (req, res) => {
     });
   }
 });
+const DeleteUser = asyncHandler(async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(employeeId)) {
+      console.log("Invalid user ID format:", employeeId);
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
 
+    // Find and delete the user by userId (assuming userId is a field in your UserModel)
+    const user = await UserModel.findOneAndDelete({ _id: employeeId });
+
+    // If user is not found
+    if (!user) {
+      console.log("User not found with ID:", employeeId);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const location = await LocationModel.findOneAndDelete({ userId: user._id });
+
+    if (location) {
+      console.log("Associated location deleted for user ID:", user._id);
+    } else {
+      console.log("No associated location found for user ID:", user._id);
+    }
+
+    // If user and location are deleted successfully
+    return res.status(200).json({
+      message: "User and associated location have been deleted successfully",
+    });
+  } catch (error) {
+    console.log("Error deleting user and location:", error);
+    return res.status(500).json({
+      message: "An unexpected error occurred",
+      error: error.message,
+    });
+  }
+});
 module.exports = {
   RegisterUser,
   LoginUser,
@@ -309,4 +346,5 @@ module.exports = {
   GetUserById,
   GetAllEmployees,
   UpdateUserProfile,
+  DeleteUser,
 };

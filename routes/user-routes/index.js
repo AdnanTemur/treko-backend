@@ -9,6 +9,7 @@ const {
   GetUserById,
   GetAllEmployees,
   UpdateUserProfile,
+  DeleteUser,
 } = require("../../controllers/user-controller");
 const { isAuthenticated } = require("../../middlewares/authenticated");
 const multer = require("multer");
@@ -35,5 +36,7 @@ UserRouter.post(
   isAuthenticated,
   UpdateUserProfile
 );
+
+UserRouter.delete("/delete-user/:employeeId", isAuthenticated, DeleteUser);
 
 module.exports = { UserRouter };

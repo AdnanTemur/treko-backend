@@ -5,6 +5,7 @@ const locationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "UserModel",
     required: true,
+    unique: true,
   },
   latitude: { type: Number, required: true },
   longitude: { type: Number, required: true },
