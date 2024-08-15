@@ -9,15 +9,21 @@ function initializeChatSocket(io) {
     // Get the userId from the query parameters or from the authentication
     const { userId } = socket.handshake.query;
     if (userId) {
+      console.log(`User connected with ID: ${userId}`);
       socket.join(userId);
+    } else {
+      console.log("User ID not provided in socket query");
     }
 
     socket.on(
       SocketEvents.SEND_MESSAGE,
       async ({ senderId, receiverId, messageText }) => {
         try {
+          console.log(`Sender ID: ${senderId}, Receiver ID: ${receiverId}`);
+
           // Find chat document for the sender
           let chat = await ChatModel.findOne({ userId: senderId });
+          console.log("Found chat for sender:", chat);
 
           if (!chat) {
             // Create a new chat document for the sender
@@ -25,6 +31,7 @@ function initializeChatSocket(io) {
               userId: senderId,
               coworkerChats: [],
             });
+            console.log("No chat found, created new chat:", chat);
           }
 
           // Find or create a coworkerChat entry for the receiver
@@ -81,6 +88,7 @@ function initializeChatSocket(io) {
           });
 
           await receiverChat.save();
+
           // Emit the message to the sender's room
           io.to(senderId).emit(SocketEvents.RECEIVE_MESSAGE, {
             senderId,
@@ -131,7 +139,10 @@ const GetCoworkerChatsWithMessages = asyncHandler(async (req, res) => {
 
     // Find the specific coworkerChat entry
     const coworkerChat = chat.coworkerChats.find((cwChat) => {
-      return cwChat.coworkerId._id.toString() === coworkerId;
+      // Check if coworkerId is not null before comparing
+      return (
+        cwChat.coworkerId && cwChat.coworkerId._id.toString() === coworkerId
+      );
     });
 
     if (!coworkerChat) {
@@ -148,10 +159,10 @@ const GetCoworkerChatsWithMessages = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 const BossChatsTracer = asyncHandler(async (req, res) => {
   try {
     const { employeeId1, employeeId2 } = req.query;
-
     if (!employeeId1 || !employeeId2) {
       return res
         .status(203)
@@ -195,6 +206,7 @@ const BossChatsTracer = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 module.exports = {
   initializeChatSocket,
   GetCoworkerChatsWithMessages,
